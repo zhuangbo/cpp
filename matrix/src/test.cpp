@@ -6,6 +6,8 @@
  */
 
 #include <iostream>
+#include <valarray>
+#include <ctime>
 using namespace std;
 
 #include "matrix.h"
@@ -41,6 +43,21 @@ int main() {
 	cout << "a=\n" << a << endl;
 	a %= 2;
 	cout << "a=\n" << a << endl;
+
+	{
+		long start = clock();
+		Matrix<int> a(10000,10000, 1);
+		a[10000-1][10000-1] = 9;
+		long end = clock();
+		cout << (end-start) << "ms" << endl;
+	}
+	{
+		long start = clock();
+		valarray<int> a(1, 10000*10000);
+		a[100000000-1] = 9;
+		long end = clock();
+		cout << (end-start) << "ms" << endl;
+	}
 
 	return 0;
 }

@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <istream>
 #include <ostream>
+#include <cassert>
 using std::size_t;
 using std::istream;
 using std::ostream;
@@ -26,6 +27,33 @@ public:
 	typedef const T& const_reference;
 	typedef size_t size_type;
 
+	typedef pointer row_iterator;
+	class ColIterator;
+	typedef ColIterator col_iterator;
+
+	class ColIterator {
+		pointer p;
+		size_type nc;
+	public:
+		ColIterator(pointer p, size_type nc) : p(p), nc(nc) {}
+		value_type& operator*() { return *p; }
+		const_reference& operator*() const { return *p; }
+		pointer operator->() { return p; }
+		const_pointer operator->() const { return p; }
+
+		ColIterator& operator++() { p+=nc; return *this; }
+		ColIterator& operator--() { p-=nc; return *this; }
+		ColIterator operator++(int) {
+			ColIterator old(*this);
+			++*this;
+			return old;
+		}
+		ColIterator operator--(int) {
+			ColIterator old(*this);
+			--*this;
+			return old;
+		}
+	};
 public:
 	// construct zero matrix
 	Matrix() :
@@ -142,6 +170,34 @@ public:
 		return data + m * n;
 	}
 
+	// row iterator
+	row_iterator row_begin(int i) {
+		return data + i * n;
+	}
+	const row_iterator row_begin(int i) const {
+		return data + i * n;
+	}
+	row_iterator row_end(int i) {
+		return data + i * n + n;
+	}
+	const row_iterator row_end(int i) const {
+		return data + i * n + n;
+	}
+
+	// column iterator
+	col_iterator col_begin(int j) {
+		return col_iterator(data + j, n);
+	}
+	const col_iterator col_begin(int j) const {
+		return col_iterator(data + j, n);
+	}
+	col_iterator col_end(int j) {
+		return col_iterator(data + j + m*n, n);
+	}
+	const col_iterator col_end(int j) const {
+		return col_iterator(data + j + m*n, n);
+	}
+
 	// A(i,j) for element
 	reference operator()(int i, int j) {
 		return *(data + i * n + j);
@@ -160,11 +216,21 @@ public:
 
 	// number operators
 #define NUMBER_OP(op)\
+	Matrix& operator op(const_reference x) {\
+		pointer p = begin();\
+		while(p!=end()) *p++ op x;\
+		return *this;\
+	}\
 	template <class V>\
 	Matrix& operator op(const V& x) {\
 		pointer p = begin();\
 		while(p!=end()) *p++ op x;\
 		return *this;\
+	}
+
+	Matrix& operator +=(const Matrix& other) {
+
+		return *this;
 	}
 
 	NUMBER_OP(+=)
